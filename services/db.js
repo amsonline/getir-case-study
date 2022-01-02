@@ -5,7 +5,7 @@ const client = new MongoClient(connectionString, {
     useUnifiedTopology: true,
 });
 
-let dbConnection;
+let dbConnection, dbObject;
 
 module.exports = {
     connectToServer: function (callback) {
@@ -16,10 +16,17 @@ module.exports = {
                     return;
                 }
     
-                dbConnection = db.db(process.env.DB_NAME);
+                dbConnection = db;
+                dbObject = db.db(process.env.DB_NAME);
     
-                resolve(dbConnection);
+                resolve();
             });
         });
+    },
+    getDb: function() {
+        return dbObject;
+    },
+    close: function() {
+        dbConnection.close();
     }
 };

@@ -17,6 +17,11 @@ router.post('/', function(req, res, next) {
       return;
   }
 
+  var startDate = new Date(req.body.startDate);
+  var endDate = new Date(req.body.endDate);
+  var minCount = parseInt(req.body.minCount);
+  var maxCount = parseInt(req.body.maxCount);
+
   // Validate startDate
   if (!moment(req.body.startDate, "YYYY-MM-DD", true).isValid()) {
     res.status(400).send(outputResults([], -111, "startDate is invalid. It should be in YYYY-MM-DD format."));
@@ -30,28 +35,31 @@ router.post('/', function(req, res, next) {
   }
 
   // Validate minCount
-  if (req.body.minCount < 0) {
+  if (isNaN(minCount) || minCount < 0) {
     res.status(400).send(outputResults([], -121, "minCount is invalid. It should be a number greater or equal to 0."));
     return;
   }
 
-  // There is no need to validate maxCount like we did for minCount, as the last validation rule (checking minCount <= maxCount) will do the same
+  // Validate maxCount
+  if (isNaN(maxCount) || maxCount < 0) {
+    res.status(400).send(outputResults([], -122, "maxCount is invalid. It should be a number greater or equal to 0."));
+    return;
+  }
 
   // startDate should be less than or equal to endDate
-  var startDate = new Date(req.body.startDate);
-  var endDate = new Date(req.body.endDate);
   if (startDate > endDate) {
     res.status(400).send(outputResults([], -113, "startDate should be less than or equal to endDate."));
     return;
   }
 
   // minCount should be less than or equal to maxCount
-  if (req.body.minCount > req.body.maxCount) {
-    res.status(400).send(outputResults([], -114, "minCount should be less than or equal to maxCount."));
+  if (minCount > maxCount) {
+    res.status(400).send(outputResults([], -123, "minCount should be less than or equal to maxCount."));
     return;
   }
 
-  db.connectToServer().then(dbo => {
+  db.connectToServer().then(() => {
+    var dbo = db.getDb();
     dbo.collection("records").aggregate([
       {
         $addFields: {
@@ -65,8 +73,8 @@ router.post('/', function(req, res, next) {
             $lte: endDate
           },
           totalCount: {
-            $gte: req.body.minCount,
-            $lte: req.body.maxCount
+            $gte: minCount,
+            $lte: maxCount
           }
         }
       },
@@ -81,10 +89,12 @@ router.post('/', function(req, res, next) {
         return;
       }
       res.send(outputResults(results));
+      db.close();
     });
   }).catch(err => {
     console.error("An error has been occurred...", err);
     res.send(outputResults([], 500, "An unexpected error has been occurred."));
+    db.close();
   });
 });
 
