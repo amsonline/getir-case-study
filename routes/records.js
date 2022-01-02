@@ -1,5 +1,4 @@
 var express = require('express');
-const { ConsoleWriter } = require('istanbul-lib-report');
 const outputResults = require('../services/outputResults');
 const moment = require('moment');
 var router = express.Router();
