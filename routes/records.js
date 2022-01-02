@@ -6,14 +6,14 @@ var router = express.Router();
 
 var db = require('../services/db');
 
-router.post('/get', function(req, res, next) {
+router.post('/', function(req, res, next) {
   
   // Check to see if all fields are present inside the payload
   if (typeof req.body.startDate === 'undefined'
     || typeof req.body.endDate === 'undefined'
     || typeof req.body.minCount === 'undefined'
     || typeof req.body.maxCount === 'undefined') {
-      res.send(outputResults([], -101, "Request payload should contain startDate, endDate, minCount and maxCount."));
+      res.status(400).send(outputResults([], -101, "Request payload should contain startDate, endDate, minCount and maxCount."));
       return;
   }
 
