@@ -84,15 +84,15 @@ router.post('/', function(req, res, next) {
       }
     ]).toArray((error, results) => {
       if (error) {
-        res.status(500).send(outputResults([], 500, `An internal error has been occurred (code ${error.code}).`));
+        res.status(500).send(outputResults([], -500, `An internal error has been occured (code ${error.code}).`));
         return;
       }
       res.send(outputResults(results));
       db.close();
     });
   }).catch(err => {
-    console.error("An error has been occurred...", err);
-    res.send(outputResults([], 500, "An unexpected error has been occurred."));
+    console.error("An error has been occured...", err);
+    res.send(outputResults([], -503, "An unexpected error has been occured."));
     db.close();
   });
 });
